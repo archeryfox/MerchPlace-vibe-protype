@@ -6,16 +6,17 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { MapPin, Search, X, ExternalLink, Star } from "lucide-react"
+import { MapPin, Search, X, ExternalLink, Star, ZoomIn, ZoomOut } from "lucide-react"
 import Link from "next/link"
 import { mockEventMap } from "@/lib/mock-data"
 
 export default function MapPage() {
   const [selectedBooth, setSelectedBooth] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [zoom, setZoom] = useState(1)
 
-  const allBooths = mockEventMap.pavilions.flatMap((p) =>
-    p.stands.map((s) => ({ ...s, pavilion: p.name, pavilionColor: p.color })),
+  const allBooths = mockEventMap.areas.flatMap((area) =>
+    area.booths.map((booth) => ({ ...booth, area: area.name, areaColor: area.color })),
   )
 
   const filteredBooths = searchQuery
@@ -23,19 +24,40 @@ export default function MapPage() {
         (booth) =>
           booth.creator?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           booth.creator?.categories.some((c: string) => c.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          booth.number.toString().includes(searchQuery),
+          booth.number.includes(searchQuery),
       )
     : []
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur">
-        <div className="px-4 py-4">
-          <h1 className="mb-3 text-xl font-bold text-foreground">Карта мероприятия</h1>
+        <div className="px-4 py-3">
+          <div className="mb-3 flex items-center justify-between">
+            <h1 className="text-xl font-bold text-foreground">Карта мероприятия</h1>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}
+                className="h-8 w-8 p-0"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setZoom(Math.min(2, zoom + 0.1))}
+                className="h-8 w-8 p-0"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Поиск по художникам, категориям..."
+              placeholder="Поиск по стендам..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-10"
@@ -72,7 +94,7 @@ export default function MapPage() {
                         <div className="text-xs text-muted-foreground">Стенд {booth.number}</div>
                       </div>
                       <Badge variant="outline" className="text-xs">
-                        {booth.pavilion}
+                        {booth.area}
                       </Badge>
                     </>
                   ) : (
@@ -85,137 +107,223 @@ export default function MapPage() {
         </div>
       </div>
 
-      <main className="px-4 py-6">
-        <div className="space-y-6">
-          {mockEventMap.pavilions.map((pavilion) => (
-            <Card key={pavilion.id} className="border-border bg-card p-4">
-              <div className="mb-4 flex items-center gap-2">
-                <div
-                  className="h-6 w-6 rounded border-2 border-foreground"
-                  style={{ backgroundColor: pavilion.color }}
-                />
-                <h2 className="text-lg font-bold text-foreground">{pavilion.name}</h2>
-              </div>
+      <main className="map-scroll-container overflow-auto">
+        <style jsx>{`
+          .map-scroll-container {
+            scrollbar-width: thin;
+            scrollbar-color: hsl(45 93% 47%) hsl(15 15% 16%);
+          }
+          
+          .map-scroll-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+          }
+          
+          .map-scroll-container::-webkit-scrollbar-track {
+            background: hsl(15 15% 16%);
+            border-radius: 4px;
+          }
+          
+          .map-scroll-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, hsl(45 93% 47%) 0%, hsl(45 93% 37%) 100%);
+            border-radius: 4px;
+            border: 1px solid hsl(15 15% 16%);
+          }
+          
+          .map-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, hsl(45 93% 57%) 0%, hsl(45 93% 47%) 100%);
+          }
+          
+          .map-scroll-container::-webkit-scrollbar-corner {
+            background: hsl(15 15% 16%);
+          }
+        `}</style>
 
-              <div className="grid grid-cols-5 gap-2">
-                {pavilion.stands.map((stand) => (
-                  <button
-                    key={stand.id}
-                    onClick={() =>
-                      setSelectedBooth({ ...stand, pavilion: pavilion.name, pavilionColor: pavilion.color })
-                    }
-                    className={`relative aspect-square rounded-lg border-2 transition-all ${
-                      stand.creator
-                        ? "border-primary bg-primary/20 hover:bg-primary/30"
-                        : "border-muted-foreground/30 bg-muted hover:bg-muted-foreground/20"
-                    } ${selectedBooth?.id === stand.id ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
-                  >
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-1">
-                      <span className="text-xs font-bold text-foreground">{stand.number}</span>
-                      {stand.creator && <Star className="mt-1 h-3 w-3 fill-primary text-primary" />}
-                    </div>
-                  </button>
-                ))}
-              </div>
+        <div className="min-w-[800px] p-4" style={{ transform: `scale(${zoom})`, transformOrigin: "top left" }}>
+          {/* Main Stage and VIP Area */}
+          <div className="mb-4 flex gap-4">
+            <Card className="flex-1 border-2 border-yellow-500 bg-yellow-500/10 p-6 text-center">
+              <div className="text-2xl font-bold text-yellow-500">ГЛАВНАЯ СЦЕНА</div>
+              <div className="text-sm text-muted-foreground">Main Stage</div>
             </Card>
-          ))}
-        </div>
+            <Card className="w-48 border-2 border-cyan-500 bg-cyan-500/10 p-6 text-center">
+              <div className="text-lg font-bold text-cyan-500">VIP LOUNGE</div>
+            </Card>
+          </div>
 
-        {selectedBooth && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4">
-            <Card className="w-full max-w-lg border-border bg-card p-6 animate-in slide-in-from-bottom">
-              <div className="mb-4 flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="h-8 w-8 rounded border-2 border-foreground"
-                    style={{ backgroundColor: selectedBooth.pavilionColor }}
-                  />
-                  <div>
-                    <div className="text-sm text-muted-foreground">{selectedBooth.pavilion}</div>
-                    <div className="font-bold text-foreground">Стенд {selectedBooth.number}</div>
-                  </div>
-                </div>
-                <button onClick={() => setSelectedBooth(null)} className="rounded-full p-2 hover:bg-muted">
-                  <X className="h-5 w-5" />
-                </button>
+          {/* Food Court */}
+          <Card className="mb-4 border-2 border-orange-500 bg-orange-500/10 p-4 text-center">
+            <div className="text-lg font-bold text-orange-500">🍕 FOOD COURT 🍔</div>
+          </Card>
+
+          {/* Main Exhibition Area with Aisles */}
+          <div className="relative rounded-lg border-2 border-border bg-muted/20 p-4">
+            {/* Horizontal Main Aisle */}
+            <div className="absolute left-0 right-0 top-1/2 h-8 -translate-y-1/2 bg-gradient-to-r from-muted via-muted-foreground/20 to-muted">
+              <div className="flex h-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                ← ГЛАВНЫЙ ПРОХОД →
               </div>
+            </div>
 
-              {selectedBooth.creator ? (
-                <div>
-                  <div className="mb-4 flex items-start gap-4">
-                    <Avatar className="h-16 w-16 border-2 border-primary">
-                      <AvatarImage
-                        src={selectedBooth.creator.avatar || "/placeholder.svg"}
-                        alt={selectedBooth.creator.name}
-                      />
-                      <AvatarFallback>{selectedBooth.creator.name[0]}</AvatarFallback>
-                    </Avatar>
+            {/* Vertical Aisles */}
+            <div className="absolute bottom-0 left-1/4 top-0 w-6 bg-gradient-to-b from-muted via-muted-foreground/20 to-muted" />
+            <div className="absolute bottom-0 left-1/2 top-0 w-6 -translate-x-1/2 bg-gradient-to-b from-muted via-muted-foreground/20 to-muted" />
+            <div className="absolute bottom-0 right-1/4 top-0 w-6 bg-gradient-to-b from-muted via-muted-foreground/20 to-muted" />
 
-                    <div className="flex-1">
-                      <div className="mb-1 flex items-center gap-2">
-                        <h3 className="text-lg font-bold text-foreground">{selectedBooth.creator.name}</h3>
-                        {selectedBooth.creator.verified && (
-                          <Badge variant="secondary" className="bg-primary/20 text-primary text-xs">
-                            ✓
-                          </Badge>
+            <div className="space-y-6">
+              {mockEventMap.areas.map((area, areaIndex) => (
+                <div key={area.id} className="relative">
+                  <div className="mb-2 flex items-center gap-2">
+                    <div className="h-4 w-4 rounded" style={{ backgroundColor: area.color }} />
+                    <span className="text-sm font-semibold text-foreground">{area.name}</span>
+                  </div>
+
+                  <div className="grid grid-cols-12 gap-3">
+                    {area.booths.map((booth, boothIndex) => (
+                      <div key={booth.id} className="relative">
+                        <button
+                          onClick={() => setSelectedBooth({ ...booth, area: area.name, areaColor: area.color })}
+                          className="relative aspect-square w-full rounded border transition-all hover:scale-105 hover:shadow-lg"
+                          style={{
+                            backgroundColor: booth.creator ? `${area.color}40` : "#1a1a1a",
+                            borderColor: booth.creator ? area.color : "#333",
+                            borderWidth: selectedBooth?.id === booth.id ? "3px" : "1px",
+                          }}
+                        >
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-[10px] font-bold text-foreground">{booth.number}</span>
+                          </div>
+                          {booth.creator && (
+                            <Star className="absolute right-0.5 top-0.5 h-2 w-2 fill-primary text-primary" />
+                          )}
+                        </button>
+
+                        {(boothIndex + 1) % 3 === 0 && boothIndex !== area.booths.length - 1 && (
+                          <div className="absolute -right-1.5 top-0 h-full w-3 bg-muted/50" />
                         )}
                       </div>
-                      <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
-                        <Star className="h-3 w-3 fill-primary text-primary" />
-                        <span>{selectedBooth.creator.rating}</span>
-                        <span className="mx-1">•</span>
-                        <span>{selectedBooth.creator.itemsSold} продаж</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="mb-4 text-sm text-muted-foreground">{selectedBooth.creator.bio}</p>
-
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    {selectedBooth.creator.categories.map((category: string) => (
-                      <Badge key={category} variant="outline" className="border-primary/30 text-xs">
-                        {category}
-                      </Badge>
                     ))}
                   </div>
 
-                  <div className="flex gap-2">
-                    <Link href={`/profile/${selectedBooth.creator.id}`} className="flex-1">
-                      <Button className="w-full gap-2">
-                        Перейти в профиль
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
+                  {areaIndex < mockEventMap.areas.length - 1 && (
+                    <div className="my-4 h-6 rounded bg-gradient-to-r from-transparent via-muted-foreground/20 to-transparent">
+                      <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">
+                        • • • ПРОХОД • • •
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="py-8 text-center">
-                  <MapPin className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">Этот стенд пока свободен</p>
-                </div>
-              )}
-            </Card>
+              ))}
+            </div>
           </div>
-        )}
 
-        <Card className="mt-6 border-border bg-card p-4">
-          <h3 className="mb-3 font-semibold text-foreground">Легенда</h3>
-          <div className="space-y-2 text-sm">
+          {/* Main Entrance */}
+          <Card className="mt-4 border-2 border-amber-600 bg-amber-600/10 p-4 text-center">
+            <div className="text-lg font-bold text-amber-600">⬇️ ГЛАВНЫЙ ВХОД / MAIN ENTRANCE ⬇️</div>
+          </Card>
+        </div>
+
+        {/* Legend */}
+        <Card className="mx-4 mb-4 border-border bg-card p-4">
+          <h3 className="mb-3 font-semibold text-foreground">Легенда категорий</h3>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {mockEventMap.areas.map((area) => (
+              <div key={area.id} className="flex items-center gap-2">
+                <div className="h-4 w-4 rounded" style={{ backgroundColor: area.color }} />
+                <span className="text-muted-foreground">{area.name}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 space-y-2 border-t border-border pt-3">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded border-2 border-primary bg-primary/20" />
+              <div className="h-4 w-4 rounded border-2 border-foreground bg-primary/20" />
               <span className="text-muted-foreground">Занятый стенд</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded border-2 border-muted-foreground/30 bg-muted" />
+              <div className="h-4 w-4 rounded border border-muted-foreground/30 bg-muted" />
               <span className="text-muted-foreground">Свободный стенд</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 fill-primary text-primary" />
-              <span className="text-muted-foreground">Активный создатель</span>
             </div>
           </div>
         </Card>
       </main>
+
+      {/* Selected Booth Details */}
+      {selectedBooth && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4">
+          <Card className="w-full max-w-lg border-border bg-card p-6 animate-in slide-in-from-bottom">
+            <div className="mb-4 flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-8 w-8 rounded border-2 border-foreground"
+                  style={{ backgroundColor: selectedBooth.areaColor }}
+                />
+                <div>
+                  <div className="text-sm text-muted-foreground">{selectedBooth.area}</div>
+                  <div className="font-bold text-foreground">Стенд {selectedBooth.number}</div>
+                </div>
+              </div>
+              <button onClick={() => setSelectedBooth(null)} className="rounded-full p-2 hover:bg-muted">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {selectedBooth.creator ? (
+              <div>
+                <div className="mb-4 flex items-start gap-4">
+                  <Avatar className="h-16 w-16 border-2 border-primary">
+                    <AvatarImage
+                      src={selectedBooth.creator.avatar || "/placeholder.svg"}
+                      alt={selectedBooth.creator.name}
+                    />
+                    <AvatarFallback>{selectedBooth.creator.name[0]}</AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex-1">
+                    <div className="mb-1 flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-foreground">{selectedBooth.creator.name}</h3>
+                      {selectedBooth.creator.verified && (
+                        <Badge variant="secondary" className="bg-primary/20 text-xs text-primary">
+                          ✓
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
+                      <Star className="h-3 w-3 fill-primary text-primary" />
+                      <span>{selectedBooth.creator.rating}</span>
+                      <span className="mx-1">•</span>
+                      <span>{selectedBooth.creator.itemsSold} продаж</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="mb-4 text-sm text-muted-foreground">{selectedBooth.creator.bio}</p>
+
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {selectedBooth.creator.categories.map((category: string) => (
+                    <Badge key={category} variant="outline" className="border-primary/30 text-xs">
+                      {category}
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="flex gap-2">
+                  <Link href={`/profile/${selectedBooth.creator.id}`} className="flex-1">
+                    <Button className="w-full gap-2">
+                      Перейти в профиль
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <MapPin className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
+                <p className="text-muted-foreground">Этот стенд пока свободен</p>
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

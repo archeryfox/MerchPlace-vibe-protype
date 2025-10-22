@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Gavel, Store, Search, User } from "lucide-react"
+import { Home, Gavel, Store, Map, User } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -9,7 +9,7 @@ const navItems = [
   { href: "/", icon: Home, label: "Главная" },
   { href: "/auctions", icon: Gavel, label: "Аукционы" },
   { href: "/shop", icon: Store, label: "Магазин" },
-  { href: "/search", icon: Search, label: "Поиск" },
+  { href: "/map", icon: Map, label: "Карта" },
   { href: "/profile/1", icon: User, label: "Профиль" },
 ]
 
