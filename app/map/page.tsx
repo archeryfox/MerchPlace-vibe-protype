@@ -158,49 +158,48 @@ export default function MapPage() {
 
           {/* Main Exhibition Area with Aisles */}
           <div className="relative rounded-lg border-2 border-border bg-muted/20 p-4">
-            {/* Horizontal Main Aisle */}
-            <div className="absolute left-0 right-0 top-1/2 h-8 -translate-y-1/2 bg-gradient-to-r from-muted via-muted-foreground/20 to-muted">
-              <div className="flex h-full items-center justify-center text-xs font-semibold text-muted-foreground">
-                ← ГЛАВНЫЙ ПРОХОД →
-              </div>
-            </div>
-
-            {/* Vertical Aisles */}
-            <div className="absolute bottom-0 left-1/4 top-0 w-6 bg-gradient-to-b from-muted via-muted-foreground/20 to-muted" />
-            <div className="absolute bottom-0 left-1/2 top-0 w-6 -translate-x-1/2 bg-gradient-to-b from-muted via-muted-foreground/20 to-muted" />
-            <div className="absolute bottom-0 right-1/4 top-0 w-6 bg-gradient-to-b from-muted via-muted-foreground/20 to-muted" />
-
             <div className="space-y-6">
               {mockEventMap.areas.map((area, areaIndex) => (
                 <div key={area.id} className="relative">
-                  <div className="mb-2 flex items-center gap-2">
+                  <div className="mb-3 flex items-center gap-2">
                     <div className="h-4 w-4 rounded" style={{ backgroundColor: area.color }} />
                     <span className="text-sm font-semibold text-foreground">{area.name}</span>
                   </div>
 
-                  <div className="grid grid-cols-12 gap-3">
-                    {area.booths.map((booth, boothIndex) => (
-                      <div key={booth.id} className="relative">
-                        <button
-                          onClick={() => setSelectedBooth({ ...booth, area: area.name, areaColor: area.color })}
-                          className="relative aspect-square w-full rounded border transition-all hover:scale-105 hover:shadow-lg"
-                          style={{
-                            backgroundColor: booth.creator ? `${area.color}40` : "#1a1a1a",
-                            borderColor: booth.creator ? area.color : "#333",
-                            borderWidth: selectedBooth?.id === booth.id ? "3px" : "1px",
-                          }}
-                        >
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-[10px] font-bold text-foreground">{booth.number}</span>
-                          </div>
-                          {booth.creator && (
-                            <Star className="absolute right-0.5 top-0.5 h-2 w-2 fill-primary text-primary" />
-                          )}
-                        </button>
+                  <div className="space-y-2">
+                    {Array.from({ length: Math.ceil(area.booths.length / 12) }).map((_, rowIndex) => (
+                      <div key={rowIndex} className="flex gap-2">
+                        {area.booths.slice(rowIndex * 12, (rowIndex + 1) * 12).map((booth, colIndex) => {
+                          const isAisle = (colIndex + 1) % 3 === 0 && colIndex !== 11
 
-                        {(boothIndex + 1) % 3 === 0 && boothIndex !== area.booths.length - 1 && (
-                          <div className="absolute -right-1.5 top-0 h-full w-3 bg-muted/50" />
-                        )}
+                          return (
+                            <div key={booth.id} className="flex gap-2">
+                              {booth.creator ? (
+                                <button
+                                  onClick={() => setSelectedBooth({ ...booth, area: area.name, areaColor: area.color })}
+                                  className="relative h-12 w-12 rounded border-2 transition-all hover:scale-105 hover:shadow-lg"
+                                  style={{
+                                    backgroundColor: `${area.color}40`,
+                                    borderColor: area.color,
+                                    borderWidth: selectedBooth?.id === booth.id ? "3px" : "2px",
+                                  }}
+                                >
+                                  <Star className="absolute right-0.5 top-0.5 h-2.5 w-2.5 fill-primary text-primary" />
+                                </button>
+                              ) : (
+                                <div
+                                  className="relative h-12 w-12 rounded border"
+                                  style={{
+                                    backgroundColor: "#1a1a1a",
+                                    borderColor: "#333",
+                                  }}
+                                />
+                              )}
+
+                              {isAisle && <div className="w-3 rounded bg-muted/50" />}
+                            </div>
+                          )
+                        })}
                       </div>
                     ))}
                   </div>
