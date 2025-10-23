@@ -51,3 +51,6 @@ export const mockProducts: Product[] = [
     reviews: 34,
   },
 ]
+
+// Alias for backward compatibility
+export const mockShopItems = mockProducts

@@ -1,9 +1,9 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { useCartStore } from "@/lib/cart-store"
-import { CartItem } from "@/components/cart-item"
+import { Button } from "@/shared/ui/button"
+import { Card } from "@/shared/ui/card"
+import { useCartStore } from "@/presentation/features/cart-management/viewmodel/CartViewModel"
+import { CartItem } from "@/presentation/features/cart-management/ui/CartItem"
 import { ShoppingBag, ArrowRight } from "lucide-react"
 import Link from "next/link"
 

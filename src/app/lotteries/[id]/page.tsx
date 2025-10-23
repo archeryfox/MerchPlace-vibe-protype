@@ -1,17 +1,18 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { LotteryWheel } from "@/components/lottery-wheel"
+import { use } from "react"
+import { Card } from "@/shared/ui/card"
+import { Badge } from "@/shared/ui/badge"
+import { LotteryWheel } from "@/presentation/features/lottery-participation/ui/LotteryWheel"
 import { Clock, Ticket, Trophy, Users, ChevronLeft, Share2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { mockLotteries } from "@/lib/mock-data"
+import { mockLotteries } from "@/data/mock/mockLotteries"
 import { useState } from "react"
 
-export default function LotteryDetailPage({ params }: { params: { id: string } }) {
-  const lottery = mockLotteries.find((l) => l.id === Number.parseInt(params.id)) || mockLotteries[0]
+export default function LotteryDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
+  const lottery = mockLotteries.find((l) => l.id === Number.parseInt(resolvedParams.id)) || mockLotteries[0]
   const [ticketCount, setTicketCount] = useState(1)
   const [showWheel, setShowWheel] = useState(false)
   const progress = (lottery.soldTickets / lottery.totalTickets) * 100

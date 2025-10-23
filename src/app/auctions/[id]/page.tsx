@@ -1,19 +1,21 @@
 "use client"
 
-import { Header } from "@/components/header"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
+import { use } from "react"
+import { Header } from "@/presentation/widgets/header/ui/Header"
+import { Button } from "@/shared/ui/button"
+import { Card } from "@/shared/ui/card"
+import { Badge } from "@/shared/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
+import { Input } from "@/shared/ui/input"
 import { Clock, Eye, Gavel, Heart, Share2, MapPin } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { mockAuctions } from "@/lib/mock-data"
+import { mockAuctions } from "@/data/mock/mockAuctions"
 import { useState } from "react"
 
-export default function AuctionDetailPage({ params }: { params: { id: string } }) {
-  const auction = mockAuctions.find((a) => a.id === Number.parseInt(params.id)) || mockAuctions[0]
+export default function AuctionDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
+  const auction = mockAuctions.find((a) => a.id === Number.parseInt(resolvedParams.id)) || mockAuctions[0]
   const [selectedImage, setSelectedImage] = useState(0)
   const [bidAmount, setBidAmount] = useState(auction.currentBid + 100)
 

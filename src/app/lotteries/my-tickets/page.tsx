@@ -1,8 +1,8 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/shared/ui/button"
+import { Card } from "@/shared/ui/card"
+import { Badge } from "@/shared/ui/badge"
 import { ChevronLeft, Clock, QrCode } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"

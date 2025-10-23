@@ -1,10 +1,12 @@
-import { ProfileHeader } from "@/components/profile-header"
-import { ProfileStats } from "@/components/profile-stats"
-import { ProfileTabs } from "@/components/profile-tabs"
-import { mockUsers } from "@/lib/mock-data"
+import { ProfileHeader } from "@/presentation/widgets/profile-header/ui/ProfileHeader"
+import { ProfileStats } from "@/presentation/widgets/profile-stats/ui/ProfileStats"
+import { ProfileTabs } from "@/presentation/widgets/profile-tabs/ui/ProfileTabs"
+import { mockUsers } from "@/data/mock/mockUsers"
+import { use } from "react"
 
-export default function ProfilePage({ params }: { params: { id: string } }) {
-  const user = mockUsers.find((u) => u.id === Number.parseInt(params.id)) || mockUsers[0]
+export default function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
+  const user = mockUsers.find((u) => u.id === Number.parseInt(resolvedParams.id)) || mockUsers[0]
 
   return (
     <div className="min-h-screen bg-background">

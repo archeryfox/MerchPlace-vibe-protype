@@ -1,18 +1,19 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { use } from "react"
+import { Card } from "@/shared/ui/card"
+import { Badge } from "@/shared/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 import { Star, ShoppingCart, Heart, Share2, Package, MapPin } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { mockShopItems } from "@/lib/mock-data"
+import { mockShopItems } from "@/data/mock/mockProducts"
 import { useState } from "react"
-import { useCartStore } from "@/lib/cart-store"
+import { useCartStore } from "@/presentation/features/cart-management/viewmodel/CartViewModel"
 
-export default function ShopItemDetailPage({ params }: { params: { id: string } }) {
-  const item = mockShopItems.find((i) => i.id === Number.parseInt(params.id)) || mockShopItems[0]
+export default function ShopItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
+  const item = mockShopItems.find((i) => i.id === Number.parseInt(resolvedParams.id)) || mockShopItems[0]
   const [quantity, setQuantity] = useState(1)
   const addItem = useCartStore((state) => state.addItem)
 

@@ -1,7 +1,7 @@
 import { Heart, MessageCircle, Gavel, ShoppingBag, Calendar, CheckCircle2 } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card } from "@/shared/ui/card"
+import { Button } from "@/shared/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
 
 const notifications = [
   {

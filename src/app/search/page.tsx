@@ -2,14 +2,16 @@
 
 import { useState } from "react"
 import { Search, Filter, TrendingUp } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { AuctionCard } from "@/components/auction-card"
-import { ShopItemCard } from "@/components/shop-item-card"
-import { CreatorCard } from "@/components/creator-card"
-import { mockAuctions, mockShopItems, mockUsers } from "@/lib/mock-data"
+import { Input } from "@/shared/ui/input"
+import { Button } from "@/shared/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
+import { Badge } from "@/shared/ui/badge"
+import { AuctionCard } from "@/presentation/widgets/auction-card/ui/AuctionCard"
+import { ShopItemCard } from "@/presentation/widgets/shop-item-card/ui/ShopItemCard"
+import { CreatorCard } from "@/presentation/widgets/creator-card/ui/CreatorCard"
+import { mockAuctions } from "@/data/mock/mockAuctions"
+import { mockShopItems } from "@/data/mock/mockProducts"
+import { mockUsers } from "@/data/mock/mockUsers"
 
 const trendingSearches = ["Фурри-арт", "Sonic фигурки", "Аниме мерч", "Редкие коллекционки", "Артбуки", "Косплей"]
 

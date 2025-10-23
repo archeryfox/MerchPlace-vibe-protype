@@ -1,7 +1,7 @@
 import { User, Bell, Lock, CreditCard, Globe, Moon, HelpCircle, LogOut, ChevronRight } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
-import { Button } from "@/components/ui/button"
+import { Card } from "@/shared/ui/card"
+import { Switch } from "@/shared/ui/switch"
+import { Button } from "@/shared/ui/button"
 
 export default function SettingsPage() {
   return (

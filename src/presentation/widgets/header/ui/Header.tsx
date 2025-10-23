@@ -4,10 +4,24 @@ import { ShoppingCart, Bell } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import Link from "next/link"
 import { useCartStore } from "@/presentation/features/cart-management/viewmodel/CartViewModel"
+import { useEffect, useState } from "react"
 
 export function Header() {
   const getTotalItems = useCartStore((state) => state.getTotalItems)
-  const cartCount = getTotalItems()
+  const [cartCount, setCartCount] = useState(0)
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+    setCartCount(getTotalItems())
+    
+    // Подписываемся на изменения в корзине
+    const unsubscribe = useCartStore.subscribe((state) => {
+      setCartCount(state.getTotalItems())
+    })
+    
+    return unsubscribe
+  }, [getTotalItems])
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -28,7 +42,7 @@ export function Header() {
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="relative h-9 w-9 text-muted-foreground">
               <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
+              {isClient && cartCount > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                   {cartCount}
                 </span>

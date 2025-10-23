@@ -2,11 +2,13 @@
 
 import { useState } from "react"
 import { Heart } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AuctionCard } from "@/components/auction-card"
-import { ShopItemCard } from "@/components/shop-item-card"
-import { CreatorCard } from "@/components/creator-card"
-import { mockAuctions, mockShopItems, mockUsers } from "@/lib/mock-data"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
+import { AuctionCard } from "@/presentation/widgets/auction-card/ui/AuctionCard"
+import { ShopItemCard } from "@/presentation/widgets/shop-item-card/ui/ShopItemCard"
+import { CreatorCard } from "@/presentation/widgets/creator-card/ui/CreatorCard"
+import { mockAuctions } from "@/data/mock/mockAuctions"
+import { mockShopItems } from "@/data/mock/mockProducts"
+import { mockUsers } from "@/data/mock/mockUsers"
 
 export default function FavoritesPage() {
   const [favoriteAuctions] = useState(mockAuctions.slice(0, 2))

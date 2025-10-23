@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
+import { Card } from "@/shared/ui/card"
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar"
+import { Input } from "@/shared/ui/input"
 import { MapPin, Search, X, ExternalLink, Star, ZoomIn, ZoomOut } from "lucide-react"
 import Link from "next/link"
-import { mockEventMap } from "@/lib/mock-data"
+import { mockEventMap } from "@/data/mock/mockEventMap"
 
 export default function MapPage() {
   const [selectedBooth, setSelectedBooth] = useState<any>(null)
