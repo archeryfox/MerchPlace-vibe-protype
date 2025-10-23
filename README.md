@@ -1,30 +1,64 @@
-# Mobile app design
+# RareMerch - Биржа раритетного мерча
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+## Архитектура
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/archeryfoxs-projects/v0-mobile-app-design)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/wNuG4Q4HlDa)
+Проект построен на **Feature-Sliced Design (FSD)** + **Android Clean Architecture**.
 
-## Overview
+### Структура:
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+```
+src/
+├── app/           # Next.js App Router (роутинг)
+├── domain/        # Бизнес-логика (entities, use cases)
+├── data/          # Данные (repositories, API, mock)
+├── presentation/  # UI (features, widgets, screens)
+└── shared/        # Общие ресурсы (UI kit, utils, hooks)
+```
 
-## Deployment
+### Слои:
 
-Your project is live at:
+- **Domain** - Бизнес-логика, не зависит от других слоёв
+- **Data** - Работа с данными, реализует интерфейсы domain
+- **Presentation** - UI и состояние, использует domain use cases
+- **Shared** - Переиспользуемые компоненты и утилиты
 
-**[https://vercel.com/archeryfoxs-projects/v0-mobile-app-design](https://vercel.com/archeryfoxs-projects/v0-mobile-app-design)**
+Подробнее в README каждого слоя.
 
-## Build your app
+## Технологии
 
-Continue building your app on:
+- **Next.js 16** - React фреймворк
+- **React 19** - UI библиотека
+- **TypeScript** - Типизация
+- **Tailwind CSS 4** - Стилизация
+- **Zustand** - State management
+- **shadcn/ui** - UI компоненты
+- **Bun** - Runtime и package manager
 
-**[https://v0.app/chat/projects/wNuG4Q4HlDa](https://v0.app/chat/projects/wNuG4Q4HlDa)**
+## Запуск
 
-## How It Works
+```bash
+# Установка зависимостей
+bun install
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+# Разработка
+bun run dev
+
+# Сборка
+bun run build
+
+# Production
+bun run start
+```
+
+## Структура для Kotlin-разработчиков
+
+Если вы знакомы с Android разработкой:
+
+- `domain/` = domain layer (Clean Architecture)
+- `data/` = data layer (repositories, data sources)
+- `presentation/` = presentation layer (MVVM/MVI)
+- `entities/model/` = data classes
+- `usecases/` = use cases / interactors
+- `viewmodel/` = ViewModel (на Zustand)
+- `widgets/` = Composables
+- `screens/` = Activities/Fragments

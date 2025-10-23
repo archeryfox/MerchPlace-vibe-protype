@@ -2,9 +2,9 @@ import type React from "react"
 import type { Metadata } from "next"
 
 import "./globals.css"
-import { Header } from "@/components/header"
-import { MobileNav } from "@/components/mobile-nav"
-import { Toaster } from "@/components/ui/toaster"
+import { Header } from "@/presentation/widgets/header/ui/Header"
+import { MobileNav } from "@/presentation/widgets/navigation/ui/MobileNav"
+import { Toaster } from "@/shared/ui/toaster"
 
 import { Geist as V0_Font_Geist, Geist_Mono as V0_Font_Geist_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
 

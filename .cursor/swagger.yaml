@@ -1,0 +1,1211 @@
+openapi: 3.0.3
+info:
+  title: Rare Merch Exchange API
+  description: |
+    API для биржи раритетного мерча с аукционами, лотереями и конкурсами.
+    
+    ## Особенности:
+    - Аутентификация через JWT токены
+    - Система аукционов с автоматическими ставками
+    - Лотереи с криптографически безопасным розыгрышем
+    - Конкурсы с голосованием
+    - Система эскроу для безопасных транзакций
+    - Верификация товаров экспертами
+    - Система рейтингов и репутации
+    
+    ## Аутентификация:
+    Большинство эндпоинтов требуют аутентификации. Используйте JWT токен в заголовке Authorization:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+  version: 1.0.0
+  contact:
+    name: Rare Merch Exchange Support
+    email: support@rare-merch-exchange.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://rare-merch-exchange.onrender.com/api/v1
+    description: Production server
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # Аутентификация
+  /auth/register:
+    post:
+      tags:
+        - Аутентификация
+      summary: Регистрация пользователя
+      description: Создание нового аккаунта пользователя
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            example:
+              email: "user@example.com"
+              password: "securePassword123"
+              username: "johndoe"
+              first_name: "John"
+              last_name: "Doe"
+              phone: "+1234567890"
+      responses:
+        '201':
+          description: Пользователь успешно зарегистрирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags:
+        - Аутентификация
+      summary: Вход пользователя
+      description: Аутентификация пользователя и получение JWT токена
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: "user@example.com"
+              password: "securePassword123"
+      responses:
+        '200':
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Неверные учетные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Пользователи
+  /users/me:
+    get:
+      tags:
+        - Пользователи
+      summary: Получить профиль текущего пользователя
+      description: Возвращает профиль аутентифицированного пользователя
+      operationId: getCurrentUserProfile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Профиль пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Пользователи
+      summary: Обновить профиль пользователя
+      description: Обновление данных профиля текущего пользователя
+      operationId: updateUserProfile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Профиль успешно обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me/password:
+    put:
+      tags:
+        - Пользователи
+      summary: Сменить пароль
+      description: Изменение пароля текущего пользователя
+      operationId: changePassword
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Пароль успешно изменён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me/notifications:
+    put:
+      tags:
+        - Пользователи
+      summary: Обновить настройки уведомлений
+      description: Изменение настроек уведомлений пользователя
+      operationId: updateNotificationSettings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNotificationSettingsRequest'
+      responses:
+        '200':
+          description: Настройки уведомлений обновлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me/stats:
+    get:
+      tags:
+        - Пользователи
+      summary: Получить статистику пользователя
+      description: Возвращает статистику активности пользователя
+      operationId: getUserStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Статистика пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStats'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/search:
+    get:
+      tags:
+        - Пользователи
+      summary: Поиск пользователей
+      description: Поиск пользователей по имени или email
+      operationId: searchUsers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: Поисковый запрос
+          schema:
+            type: string
+            example: "john"
+        - name: limit
+          in: query
+          description: Лимит результатов
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          description: Смещение
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Список найденных пользователей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/top-rated:
+    get:
+      tags:
+        - Пользователи
+      summary: Получить топ пользователей по рейтингу
+      description: Возвращает список пользователей с наивысшим рейтингом
+      operationId: getTopRatedUsers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Лимит результатов
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Список топ пользователей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/{id}:
+    get:
+      tags:
+        - Пользователи
+      summary: Получить публичный профиль пользователя
+      description: Возвращает публичный профиль пользователя по ID
+      operationId: getUserProfile
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пользователя
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Профиль пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Товары
+  /items:
+    get:
+      tags:
+        - Товары
+      summary: Поиск товаров
+      description: Поиск товаров по различным критериям
+      operationId: searchItems
+      parameters:
+        - name: query
+          in: query
+          description: Поисковый запрос
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Категория товара
+          schema:
+            $ref: '#/components/schemas/ItemCategory'
+        - name: min_price
+          in: query
+          description: Минимальная цена
+          schema:
+            type: number
+            format: decimal
+        - name: max_price
+          in: query
+          description: Максимальная цена
+          schema:
+            type: number
+            format: decimal
+        - name: verified_only
+          in: query
+          description: Только верифицированные товары
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          description: Лимит результатов
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          description: Смещение
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Список товаров
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ItemDetail'
+                  total:
+                    type: integer
+                    description: Общее количество товаров
+
+    post:
+      tags:
+        - Товары
+      summary: Создать товар
+      description: Создание нового товара для продажи
+      operationId: createItem
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateItemRequest'
+      responses:
+        '201':
+          description: Товар успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /items/featured:
+    get:
+      tags:
+        - Товары
+      summary: Получить рекомендуемые товары
+      description: Возвращает список рекомендуемых товаров
+      operationId: getFeaturedItems
+      parameters:
+        - name: limit
+          in: query
+          description: Лимит результатов
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Список рекомендуемых товаров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemDetail'
+
+  /items/category/{category}:
+    get:
+      tags:
+        - Товары
+      summary: Получить товары по категории
+      description: Возвращает товары определенной категории
+      operationId: getItemsByCategory
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: Категория товара
+          schema:
+            $ref: '#/components/schemas/ItemCategory'
+        - name: limit
+          in: query
+          description: Лимит результатов
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          description: Смещение
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Список товаров категории
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemDetail'
+
+  /items/{id}:
+    get:
+      tags:
+        - Товары
+      summary: Получить товар
+      description: Возвращает детальную информацию о товаре
+      operationId: getItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID товара
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Информация о товаре
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Товары
+      summary: Обновить товар
+      description: Обновление информации о товаре
+      operationId: updateItem
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID товара
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateItemRequest'
+      responses:
+        '200':
+          description: Товар успешно обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Товары
+      summary: Удалить товар
+      description: Удаление товара
+      operationId: deleteItem
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID товара
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Товар успешно удалён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /items/{id}/verify:
+    post:
+      tags:
+        - Товары
+      summary: Подать на верификацию
+      description: Подача товара на верификацию экспертами
+      operationId: submitForVerification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID товара
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Товар подан на верификацию
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /items/{id}/authenticity:
+    get:
+      tags:
+        - Товары
+      summary: Получить статус подлинности
+      description: Возвращает информацию о статусе верификации товара
+      operationId: getAuthenticityStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID товара
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Статус подлинности товара
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticityStatus'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT токен для аутентификации. Получите токен через эндпоинты `/auth/register` или `/auth/login`.
+        
+        Пример использования:
+        ```
+        Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        ```
+
+  responses:
+    BadRequest:
+      description: Неверный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "invalid_request"
+            message: "Неверный формат запроса"
+
+    Unauthorized:
+      description: Не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "unauthorized"
+            message: "Пользователь не аутентифицирован"
+
+    Forbidden:
+      description: Доступ запрещён
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "forbidden"
+            message: "Недостаточно прав для выполнения операции"
+
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "not_found"
+            message: "Запрашиваемый ресурс не найден"
+
+    InternalServerError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "internal_error"
+            message: "Произошла внутренняя ошибка сервера"
+
+  schemas:
+    # Базовые типы
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Код ошибки
+          example: "invalid_request"
+        message:
+          type: string
+          description: Описание ошибки
+          example: "Неверный формат запроса"
+
+    SuccessResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Сообщение об успехе
+          example: "Операция выполнена успешно"
+
+    # Аутентификация
+    CreateUserRequest:
+      type: object
+      required:
+        - email
+        - password
+        - username
+        - first_name
+        - last_name
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+          example: "user@example.com"
+        password:
+          type: string
+          minLength: 8
+          description: Пароль пользователя
+          example: "securePassword123"
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          pattern: "^[a-zA-Z0-9_]+$"
+          description: Имя пользователя
+          example: "johndoe"
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Имя
+          example: "John"
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Фамилия
+          example: "Doe"
+        phone:
+          type: string
+          description: Номер телефона
+          example: "+1234567890"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+          example: "user@example.com"
+        password:
+          type: string
+          description: Пароль пользователя
+          example: "securePassword123"
+
+    AuthResponse:
+      type: object
+      required:
+        - user
+        - token
+      properties:
+        user:
+          $ref: '#/components/schemas/UserProfile'
+        token:
+          type: string
+          description: JWT токен
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    # Пользователи
+    UserProfile:
+      type: object
+      required:
+        - id
+        - username
+        - verified
+        - rating
+        - rank
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID пользователя
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        username:
+          type: string
+          description: Имя пользователя
+          example: "johndoe"
+        first_name:
+          type: string
+          description: Имя
+          example: "John"
+        last_name:
+          type: string
+          description: Фамилия
+          example: "Doe"
+        avatar:
+          type: string
+          format: uri
+          description: URL аватара
+          example: "https://example.com/avatar.jpg"
+        verified:
+          type: boolean
+          description: Статус верификации
+          example: true
+        rating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+          description: Рейтинг пользователя
+          example: 4.5
+        rank:
+          type: string
+          enum: [newbie, bronze, silver, gold, platinum, diamond]
+          description: Ранг пользователя
+          example: "gold"
+        created_at:
+          type: string
+          format: date-time
+          description: Дата регистрации
+          example: "2024-01-01T00:00:00Z"
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          pattern: "^[a-zA-Z0-9_]+$"
+          description: Новое имя пользователя
+          example: "newusername"
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Новое имя
+          example: "Jane"
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Новая фамилия
+          example: "Smith"
+        phone:
+          type: string
+          description: Новый номер телефона
+          example: "+9876543210"
+        avatar:
+          type: string
+          format: uri
+          description: Новый URL аватара
+          example: "https://example.com/new-avatar.jpg"
+
+    ChangePasswordRequest:
+      type: object
+      required:
+        - current_password
+        - new_password
+      properties:
+        current_password:
+          type: string
+          description: Текущий пароль
+          example: "currentPassword123"
+        new_password:
+          type: string
+          minLength: 8
+          description: Новый пароль
+          example: "newSecurePassword456"
+
+    UpdateNotificationSettingsRequest:
+      type: object
+      properties:
+        email_notifications:
+          type: boolean
+          description: Email уведомления
+          example: true
+        push_notifications:
+          type: boolean
+          description: Push уведомления
+          example: false
+        fcm_token:
+          type: string
+          description: FCM токен для push уведомлений
+          example: "fcm_token_here"
+
+    UserStats:
+      type: object
+      properties:
+        total_items:
+          type: integer
+          description: Общее количество товаров
+          example: 25
+        total_auctions:
+          type: integer
+          description: Общее количество аукционов
+          example: 10
+        total_lotteries:
+          type: integer
+          description: Общее количество лотерей
+          example: 5
+        total_contests:
+          type: integer
+          description: Общее количество конкурсов
+          example: 3
+        total_transactions:
+          type: integer
+          description: Общее количество транзакций
+          example: 15
+        total_spent:
+          type: number
+          format: decimal
+          description: Общая сумма потраченных средств
+          example: 1250.50
+        total_earned:
+          type: number
+          format: decimal
+          description: Общая сумма заработанных средств
+          example: 2100.75
+        win_rate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Процент выигранных аукционов
+          example: 0.65
+
+    # Товары
+    ItemCategory:
+      type: string
+      enum: [clothing, accessories, electronics, collectibles, art, sports, books, music, games, other]
+      description: Категория товара
+
+    ItemStatus:
+      type: string
+      enum: [draft, active, sold, cancelled, pending_verification, verified, rejected]
+      description: Статус товара
+
+    Item:
+      type: object
+      required:
+        - id
+        - seller_id
+        - title
+        - description
+        - category
+        - price
+        - status
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID товара
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        seller_id:
+          type: string
+          format: uuid
+          description: ID продавца
+          example: "123e4567-e89b-12d3-a456-426614174001"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Название товара
+          example: "Редкая футболка Nike"
+        description:
+          type: string
+          maxLength: 5000
+          description: Описание товара
+          example: "Оригинальная футболка Nike из ограниченной коллекции"
+        category:
+          $ref: '#/components/schemas/ItemCategory'
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Цена товара
+          example: 99.99
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Ссылки на изображения товара
+          example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+        condition:
+          type: string
+          enum: [new, like_new, good, fair, poor]
+          description: Состояние товара
+          example: "like_new"
+        brand:
+          type: string
+          description: Бренд товара
+          example: "Nike"
+        size:
+          type: string
+          description: Размер товара
+          example: "M"
+        color:
+          type: string
+          description: Цвет товара
+          example: "Black"
+        status:
+          $ref: '#/components/schemas/ItemStatus'
+        verified:
+          type: boolean
+          description: Статус верификации
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          description: Дата создания
+          example: "2024-01-01T00:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Дата обновления
+          example: "2024-01-01T00:00:00Z"
+
+    ItemDetail:
+      allOf:
+        - $ref: '#/components/schemas/Item'
+        - type: object
+          properties:
+            seller:
+              $ref: '#/components/schemas/UserProfile'
+            verification_status:
+              $ref: '#/components/schemas/VerificationStatus'
+
+    CreateItemRequest:
+      type: object
+      required:
+        - title
+        - description
+        - category
+        - price
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Название товара
+          example: "Редкая футболка Nike"
+        description:
+          type: string
+          maxLength: 5000
+          description: Описание товара
+          example: "Оригинальная футболка Nike из ограниченной коллекции"
+        category:
+          $ref: '#/components/schemas/ItemCategory'
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Цена товара
+          example: 99.99
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Ссылки на изображения товара
+          example: ["https://example.com/image1.jpg"]
+        condition:
+          type: string
+          enum: [new, like_new, good, fair, poor]
+          description: Состояние товара
+          example: "like_new"
+        brand:
+          type: string
+          description: Бренд товара
+          example: "Nike"
+        size:
+          type: string
+          description: Размер товара
+          example: "M"
+        color:
+          type: string
+          description: Цвет товара
+          example: "Black"
+
+    UpdateItemRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Новое название товара
+          example: "Обновленное название товара"
+        description:
+          type: string
+          maxLength: 5000
+          description: Новое описание товара
+          example: "Обновленное описание товара"
+        category:
+          $ref: '#/components/schemas/ItemCategory'
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Новая цена товара
+          example: 149.99
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Новые ссылки на изображения товара
+        condition:
+          type: string
+          enum: [new, like_new, good, fair, poor]
+          description: Новое состояние товара
+        brand:
+          type: string
+          description: Новый бренд товара
+        size:
+          type: string
+          description: Новый размер товара
+        color:
+          type: string
+          description: Новый цвет товара
+
+    AuthenticityStatus:
+      type: object
+      properties:
+        verified:
+          type: boolean
+          description: Статус верификации
+          example: true
+        verification_date:
+          type: string
+          format: date-time
+          description: Дата верификации
+          example: "2024-01-01T00:00:00Z"
+        verified_by:
+          type: string
+          format: uuid
+          description: ID эксперта, который провёл верификацию
+          example: "123e4567-e89b-12d3-a456-426614174002"
+        verification_notes:
+          type: string
+          description: Заметки эксперта
+          example: "Товар соответствует описанию, оригинальный"
+
+    VerificationStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, verified, rejected, expired]
+          description: Статус верификации
+          example: "verified"
+        submitted_at:
+          type: string
+          format: date-time
+          description: Дата подачи на верификацию
+          example: "2024-01-01T00:00:00Z"
+        verified_at:
+          type: string
+          format: date-time
+          description: Дата верификации
+          example: "2024-01-02T00:00:00Z"
+        expert_id:
+          type: string
+          format: uuid
+          description: ID эксперта
+          example: "123e4567-e89b-12d3-a456-426614174002"
+        notes:
+          type: string
+          description: Заметки эксперта
+          example: "Товар оригинальный"
+
+tags:
+  - name: Аутентификация
+    description: Операции аутентификации и авторизации
+  - name: Пользователи
+    description: Управление пользователями и профилями
+  - name: Товары
+    description: Управление товарами
